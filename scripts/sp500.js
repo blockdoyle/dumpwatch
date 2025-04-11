@@ -1,20 +1,24 @@
-// Replace 'YOUR_API_KEY' with your actual Alpha Vantage API key
-const apiKey = "JDFWFQTQKII1ECXZ";
-const symbol = "SPY"; // SPY is an ETF that tracks the S&P 500 index
-const interval = "60min"; // Hourly data
-const url = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=${interval}&apikey=${apiKey}`;
+const yahooFinanceUrl =
+  "https://query1.finance.yahoo.com/v8/finance/chart/SPY?interval=1h&range=1d";
+const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(
+  yahooFinanceUrl
+)}`;
 
-fetch(url)
+fetch(proxyUrl)
   .then((response) => response.json())
   .then((data) => {
-    const timeSeries = data[`Time Series (${interval})`];
-    const timestamps = Object.keys(timeSeries).slice(0, 24).reverse(); // Last 24 hours
-    const prices = timestamps.map((timestamp) =>
-      parseFloat(timeSeries[timestamp]["4. close"])
+    const parsedData = JSON.parse(data.contents); // Parse the proxied response
+    const chartData = parsedData.chart.result[0];
+    const timestamps = chartData.timestamp.map((ts) =>
+      new Date(ts * 1000).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
     );
-    const volumes = timestamps.map((timestamp) =>
-      parseInt(timeSeries[timestamp]["5. volume"])
-    );
+    const prices = chartData.indicators.quote[0].close;
+    const volumes = chartData.indicators.quote[0].volume;
+
+    console.log(timestamps, prices, volumes); // Log parsed data
 
     // Create the chart
     const ctx = document.getElementById("spyChart").getContext("2d");
@@ -29,7 +33,7 @@ fetch(url)
             borderColor: "rgba(75, 192, 192, 1)",
             backgroundColor: "rgba(75, 192, 192, 0.2)",
             borderWidth: 1,
-            yAxisID: "y", // Link to the first Y-axis
+            yAxisID: "y",
           },
           {
             label: "SPY Hourly Volume",
@@ -37,22 +41,19 @@ fetch(url)
             borderColor: "rgba(255, 99, 132, 1)",
             backgroundColor: "rgba(255, 99, 132, 0.2)",
             borderWidth: 1,
-            type: "bar", // Display volume as a bar chart
-            yAxisID: "y1", // Link to the second Y-axis
+            type: "bar",
+            yAxisID: "y1",
           },
         ],
       },
       options: {
         responsive: true,
-        maintainAspectRatio: false,
+        maintainAspectRatio: true,
         scales: {
           x: {
             title: {
               display: true,
               text: "Time",
-            },
-            ticks: {
-              maxTicksLimit: 12, // Limit the number of time labels
             },
           },
           y: {
@@ -71,15 +72,11 @@ fetch(url)
               text: "Volume",
             },
             grid: {
-              drawOnChartArea: false, // Prevent grid lines from overlapping
+              drawOnChartArea: false,
             },
           },
         },
       },
     });
   })
-  .catch((error) => {
-    console.error("Error fetching SPY data:", error);
-    document.getElementById("spyChart").innerHTML =
-      "<p>Error loading chart data.</p>";
-  });
+  .catch((error) => console.error("Error fetching SPY data:", error));
