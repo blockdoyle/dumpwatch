@@ -30,7 +30,7 @@ fetch(proxyUrl)
           {
             label: "SPY Hourly Closing Price",
             data: prices,
-            borderColor: "rgba(75, 192, 192, 1)",
+            borderColor: "rgb(0, 140, 255)",
             backgroundColor: "rgba(75, 192, 192, 0.2)",
             borderWidth: 1,
             yAxisID: "y",
@@ -38,7 +38,7 @@ fetch(proxyUrl)
           {
             label: "SPY Hourly Volume",
             data: volumes,
-            borderColor: "rgba(255, 99, 132, 1)",
+            borderColor: "rgb(255, 0, 55)",
             backgroundColor: "rgba(255, 99, 132, 0.2)",
             borderWidth: 1,
             type: "bar",
